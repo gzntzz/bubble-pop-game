@@ -13,9 +13,10 @@ pygame.init()
 
 # ======== 전역 설정 ========
 # 화면 설정
-SCREEN_WIDTH=1920
+""" 테스트용: 나중에 각각 1920, 1080으로 수정 """
+SCREEN_WIDTH=1080
     # 화면 너비
-SCREEN_HEIGHT=1080
+SCREEN_HEIGHT=640
     # 화면 높이
 FPS=60
 
@@ -105,6 +106,7 @@ STAGES=[
 # ======== 유틸리티 함수 정의 ========
 def clamp(v, lo, hi):
     # PARAMETERS: value, min_value, max_value
+    return max(lo,min(hi,v))
     """ 값을 범위 내로 제한함. """
 
 # ======== 버블 클래스 - 버블 객체 ========
@@ -180,13 +182,25 @@ class Cannon:
     # 키보드 입력으로 각도 조정함.
     def rotate(self,delta):
         # TODO: 각도 증감하고 나서 범위 제한하기 (clamp 사용해서)
-        pass
+        self.angle+=delta
+        self.angle=clamp(self.angle,self.min_angle,self.max_angle)
+            # 각도 범위 제한
 
     # 발사대 조준선 그리는 역할.
     def draw(self,screen):
         # TODO: 각도 이용해서 조준선 끝점 계산하기.
         # TODO: 선, 중심점 그리기.
-        pass
+        length=100
+        rad=math.radians(self.angle)
+            # 각도를 라디안으로 변환.
+        # 발사대 끝 좌표 계산하는 로직
+        end_x=self.x+length*math.cos(rad)
+        end_y=self.y-length*math.sin(rad)
+        pygame.draw.line(screen,(255,255,255),(self.x,self.y),(end_x,end_y),4)
+            # 흰색 조준선 그림.
+        pygame.draw.circle(screen,(255,0,0),(self.x,self.y),6)
+            # 빨간색 중심점 그림.
+
 
 # ======== HexGrid 클래스 - 육각형 격자 체계 ========
 class HexGrid:
@@ -343,6 +357,7 @@ class Game:
 
         # 게임 오브젝트 초기화
         self.cannon=Cannon(SCREEN_WIDTH//2,SCREEN_HEIGHT-120)
+            # 화면 하단 중간에 배치해놓기.
         self.score_ui=ScoreDisplay()
 
         # 게임 상태
@@ -410,7 +425,19 @@ class Game:
         # TODO: 발사체 이동, 충돌 처리하기.
         # TODO: 4발마다 벽 하강시키기.
         # TODO: 스테이지 클리어, 게임 오버 체크하기.
-        pass
+        # 이벤트 큐에 쌓인 모든 이벤트를 가져옴.
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                self.running=False
+
+            elif event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_LEFT:
+                    self.cannon.rotate(+self.cannon.angle_speed)
+                        # 왼쪽 키 입력하면 반시계 방향으로 rotate
+                elif event.key==pygame.K_RIGHT:
+                    self.cannon.rotate(-self.cannon.angle_speed)
+                        # 오른쪽 키 입력하면 시계 방향으로 rotate
+
 
     # 스테이지 클리어 여부 확인함.
     def is_stage_cleared(self):
@@ -431,6 +458,8 @@ class Game:
             # RGB 색상으로 채우기: 일단 임시로 어두운 파란색 배경
         self.grid.draw(self.screen)
             # 격자 버블 그림.
+        self.cannon.draw(self.screen)
+            # cannon도 그림.
         pygame.display.flip()
             # 디스플레이 갱신함.
 
@@ -439,7 +468,7 @@ class Game:
         while self.running:
             self.clock.tick(FPS)
                 # 프레임 속도 제한함.
-            # 이벤트 큐에 쌓인 모든 이벤트를 가져옴.
+            self.update()
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     self.running=False
