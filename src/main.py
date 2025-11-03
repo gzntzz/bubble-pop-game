@@ -128,25 +128,30 @@ class Bubble:
         self.speed=BUBBLE_SPEED
             # 이동 속도
         self.row_idx=-1
-            # 격자 행 인덱스
+            # 격자 행 인덱스: 격자에 배치되지 않은 상태로 초기화(-1)
         self.col_idx=-1
-            # 격자 열 인덱스
+            # 격자 행 인덱스: 격자에 배치되지 않은 상태로 초기화(-1)
 
     # 버블을 화면에 그림.
     def draw(self,screen):
         # TODO: 색깔 딕셔너리를 써서 버블 원 그리기.
         # TODO: 테두리 추가해서 가독성 향상시키기.
-        pass
+        # 버블 원 그림.
+        pygame.draw.circle(screen,COLORS[self.color],(int(self.x),int(self.y)),self.radius)
+        # 흰색 테두리 추가해서 가독성 향상시킴.
+        pygame.draw.circle(screen,(255,255,255),(int(self.x),int(self.y)),self.radius,2)
 
     # 발사 각도 설정함.
     def set_angle(self,angle_degree):
         # TODO: 발사 각도 저장하기.
-        pass
+        self.angle_degree=angle_degree
 
     # 격자 인덱스 설정함.
-    def set_grid_index(self,row,col):
+    def set_grid_index(self,r,c):
+        # PARAMETERS: *r: row, *c: column
         # TODO: 행, 열 인덱스 저장하기.
-        pass
+        self.row_idx=r
+        self.col_idx=c
 
     # 벽 반사 포함해서 발사된 버블 이동.
     def move(self):
@@ -204,13 +209,38 @@ class HexGrid:
     def load_from_stage(self,stage_map):
         # TODO: 맵 데이터를 읽어서 버블 만들기.
         # TODO: 각 버블에 격자 인덱스 할당하기.
-        pass
+        self.map=[row[:] for row in stage_map]
+            # 원본 STAGES 데이터를 보호하기 위해 각 행 복사 후 2차원 리스트를 새로 만드는 로직
+        self.bubble_list=[]
+            # 기존 버블 객체 모두 제거함.
+
+        for r in range(self.rows):
+            for c in range(self.cols):
+                ch=self.map[r][c] if c < len(self.map[r]) else '.'
+                    # 열 인덱스가 현재 행의 길이보다 작은지 확인함.
+                        # True이면 해당 위치 문자 반환
+                # 딕셔너리 안에 키가 존재하는지 확인.
+                if ch in COLORS:
+                    x,y=self.get_cell_center(r,c)
+                    b=Bubble(x,y,ch)
+                    b.is_attached=True
+                    b.set_grid_index(r,c)
+                    self.bubble_list.append(b)
+
 
     # 육각 격자의 중심 좌표를 계산함.
-    def get_cell_center(self,row,col):
+    def get_cell_center(self,r,c):
+        # PARAMETERS: *r: row, *c: column
         # TODO: 짝수, 홀수 행에 따라서 다른 오프셋을 적용하기.
         # TODO: x, y 좌표 반환하기.
-        pass
+        """ 육각형 배열은 지그재그 배열을 사용하기 때문에 이런 계산 로직을 사용함; 육각 격자 체계의 핵심 로직 """
+        x=c*self.cell+self.cell//2
+        y=r*self.cell+self.cell//2+self.wall_offset
+        # 홀수 행은 오른쪽으로 반 칸 이동.
+        if r%2==1:
+            x+=self.cell//2
+        return x,y
+
 
     # 화면 좌표를 격자 인덱스로 바꿈.
     def screen_to_grid(self,x,y):
@@ -271,7 +301,8 @@ class HexGrid:
     # 모든 버블을 그림.
     def draw(self,screen):
         # TODO: bubble_list에 들어있는 모든 버블 draw() 호출하기.
-        pass
+        for b in self.bubble_list:
+            b.draw(screen)
 
     # 벽 하강시킴. (4발 발사한 뒤)
     def drop_wall(self):
@@ -307,11 +338,11 @@ class Game:
         pygame.display.set_caption("Bubble Pop MVP")
             # 게임 창의 제목 표시줄에 표시될 텍스트 설정
         self.clock=pygame.time.Clock()
+        self.grid=HexGrid(MAP_ROWS,MAP_COLS,CELL_SIZE,wall_offset=0)
         self.running=True
 
-        # 게임 오브젝트 전부 초기화
+        # 게임 오브젝트 초기화
         self.cannon=Cannon(SCREEN_WIDTH//2,SCREEN_HEIGHT-120)
-        self.grid=HexGrid(MAP_ROWS,MAP_COLS,CELL_SIZE,wall_offset=0)
         self.score_ui=ScoreDisplay()
 
         # 게임 상태
@@ -329,7 +360,10 @@ class Game:
             # 게임 실행 여부
 
         # 스테이지 로드
-        self.load_stage(self.current_stage)
+        # self.load_stage(self.current_stage)
+
+        # 첫 번째 스테이지 로드
+        self.grid.load_from_stage(STAGES[self.current_stage])
 
     # 스테이지 로드함.
     def load_stage(self,stage_index):
@@ -394,7 +428,9 @@ class Game:
         # TODO: 격자, 발사대, 버블 그리기.
         # TODO: UI (점수, 다음 버블, 정보) 표시하기.
         self.screen.fill((10,20,30))
-            # RGB 색상으로 채우기: 일단 어두운 파란색 배경
+            # RGB 색상으로 채우기: 일단 임시로 어두운 파란색 배경
+        self.grid.draw(self.screen)
+            # 격자 버블 그림.
         pygame.display.flip()
             # 디스플레이 갱신함.
 
