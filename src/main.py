@@ -65,53 +65,54 @@ MAP_COLS:int=24
 # 맵 데이터 1개만
 """ R, Y, G, ...: 각 색상의 앞글자를 가리킴. """
 STAGES: List[List[List[str]]] = [
-    # 스테이지 1: 초급 난이도
+    # 스테이지 1: 초급 난이도 - 기본 클러스터
     [
-        list("RRYYGGBBRRYYGG.........."),  # 24칸
-        list("RRYYGGBBRRYYG/.........."),
-        list("BBGGRRYYBBGGRR.........."),
-        list("BGGRRYYBBGGRR/.........."),
+        list("RRYYGGBBRRYYGGBBRRYYGGBB"),
+        list("RRYYGGBBRRYYGGBBRRYYGG/B"),
+        list("BBGGRRYYBBGGRRYYBBGGRRYY"),
+        list("BBGGRRYYBBGGRRYYBBGGRR/Y"),
         list("........................"),
-        list("...................../..."),
         list("........................"),
-        list("...................../..."),
         list("........................"),
-        list("...................../..."),
+        list("........................"),
+        list("........................"),
+        list("........................"),
         list("........................"),
         list("........................"),
     ],
-    # 스테이지 2: 중급 난이도
+
+    # 스테이지 2: 중급 난이도 - 산발적 배치
     [
-        list("..R..Y..B..G..RR........"),
-        list("..G..B..R..Y./YY........"),
-        list("R.R.R.R.R.R.R.R........."),
-        list("Y.Y.Y.Y.Y.Y.Y./........."),
+        list("R.Y.G.B.R.Y.G.B.R.Y.G.B."),
+        list("Y.G.B.R.Y.G.B.R.Y.G.B./R"),
+        list("G.B.R.Y.G.B.R.Y.G.B.R.Y."),
+        list("B.R.Y.G.B.R.Y.G.B.R.Y./G"),
         list("........................"),
-        list("...................../..."),
-        list("....RRGGYYBB............"),
-        list("....RRGGYYBB../........."),
         list("........................"),
-        list("...................../..."),
+        list("....RRRRGGGGYYYYBBBB...."),
+        list("....RRRRGGGGYYYYBBB/...."),
+        list("........................"),
+        list("........................"),
         list("........................"),
         list("........................"),
     ],
-    # 스테이지 3: 고급 난이도
+
+    # 스테이지 3: 고급 난이도 - 대칭 패턴
     [
-        list("RGBYRGBYRGBYRGBY........"),
-        list("RGBYRGBYRGBYRG/........."),
+        list("RGBYRGBYRGBYRGBYRGBYRGBY"),
+        list("RGBYRGBYRGBYRGBYRGBYRG/Y"),
         list("........................"),
-        list("...................../..."),
-        list("GGGG........RRRR........"),
-        list("GGGG......./RRRR........"),
         list("........................"),
-        list("...................../..."),
-        list("BBBB........YYYY........"),
-        list("BBBB......./YYYY........"),
+        list("GGGGGGGG........RRRRRRRR"),
+        list("GGGGGGGG......./RRRRRRRR"),
+        list("........................"),
+        list("........................"),
+        list("BBBBBBBB........YYYYYYYY"),
+        list("BBBBBBBB......./YYYYYYYY"),
         list("........................"),
         list("........................"),
     ],
 ]
-
 # ======== 유틸리티 함수 정의 ========
 def clamp(v:float,lo:float,hi:float)->float:
     # PARAMETERS: value, min_value, max_value
@@ -203,7 +204,7 @@ class Cannon:
             # 최소 각도 제한
         self.max_angle:float=170
             # 최대 각도 제한
-        self.angle_speed:float=3.5
+        self.angle_speed:float=2.0
             # 회전 속도
 
     # 키보드 입력으로 각도 조정함.
@@ -763,17 +764,26 @@ class Game:
                 self.running=False
 
             elif event.type==pygame.KEYDOWN:
-                if event.key==pygame.K_LEFT:
-                    self.cannon.rotate(+self.cannon.angle_speed)
-                        # 왼쪽 키 입력하면 반시계 방향으로 rotate
-                elif event.key==pygame.K_RIGHT:
-                    self.cannon.rotate(-self.cannon.angle_speed)
-                        # 오른쪽 키 입력하면 시계 방향으로 rotate
-                elif event.key==pygame.K_SPACE:
+                # if event.key==pygame.K_LEFT:
+                #     self.cannon.rotate(+self.cannon.angle_speed)
+                #         # 왼쪽 키 입력하면 반시계 방향으로 rotate
+                # elif event.key==pygame.K_RIGHT:
+                #     self.cannon.rotate(-self.cannon.angle_speed)
+                #         # 오른쪽 키 입력하면 시계 방향으로 rotate
+                if event.key==pygame.K_SPACE:
                     if self.current_bubble and not self.fire_in_air:
                         self.fire_in_air=True
                         self.current_bubble.in_air=True
                         self.current_bubble.set_angle(self.cannon.angle)
+
+        # 방향키는 매 프레임 체크
+        keys=pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            self.cannon.rotate(+self.cannon.angle_speed)
+                # 반시계 방향
+        if keys[pygame.K_RIGHT]:
+            self.cannon.rotate(-self.cannon.angle_speed)
+                # 시계 방향
 
         # 발사체 이동.
         if self.current_bubble and self.fire_in_air:
