@@ -591,16 +591,12 @@ class Game:
             # 발사 중인지 여부
         self.fire_count:int=0
             # 발사 횟수 (4발마다 벽 하강함)
-        self.prepare_bubbles()
+        # self.prepare_bubbles
             # 처음 버블 준비
 
         self.running:bool=True
             # 게임 실행 여부
 
-        # 스테이지 로드 (임시)
-        # self.load_stage(self.current_stage)
-        # 첫 번째 스테이지 로드
-        # self.grid.load_from_stage(STAGES[self.current_stage])
         self.load_stage(self.current_stage)
 
     # 스테이지 로드함.
@@ -764,8 +760,16 @@ class Game:
         # 발사체 이동.
         if self.current_bubble and self.fire_in_air:
             self.current_bubble.move()
+
+            # 화면 위로 벗어난 경우
+            if self.current_bubble.y<-BUBBLE_RADIUS:
+                self.fire_in_air=False
+                self.prepare_bubbles()
+                return
+
             # 충돌 처리 로직
             if self.process_collision_and_attach():
+                assert self.current_bubble is not None
                 # 붙여진 위치에서 매칭 검사함.
                 rr,cc=self.current_bubble.row_idx,self.current_bubble.col_idx
                 self.pop_if_match(rr,cc)
@@ -795,7 +799,7 @@ class Game:
                 self.load_stage(self.current_stage)
 
         # 게임 오버 조건 체크함.
-        if self.lowest_bubble_bottom()>self.game_over_line:
+        if self.lowest_bubble_bottom()>self.cannon.y-CELL_SIZE*0.5:
             self.running=False
 
     # 스테이지 클리어 여부 확인함.
@@ -824,45 +828,144 @@ class Game:
             int: 가장 아래 버블 하단 y좌표
         """
         # TODO: bubble_list에서 최대 y 값 찾기.
+        if not self.grid.bubble_list:
+            return 0
+
         # 모든 버블의 하단 y좌표 수집해서 list로
         bottoms=[b.y+b.radius for b in self.grid.bubble_list]
-        return max(bottoms) if bottoms else 0
+        return max(bottoms)
 
     # 화면 그림.
     def draw(self)->None:
+        """화면 그리기: 모든 UI 요소 포함함.
+        """
         # TODO: 배경 색깔 채우기.
         # TODO: 격자, 발사대, 버블 그리기.
         # TODO: UI (점수, 다음 버블, 정보) 표시하기.
         self.screen.fill((10,20,30))
             # RGB 색상으로 채우기: 일단 임시로 어두운 파란색 배경
-        self.grid.draw(self.screen)
-            # 격자 버블 그림.
-        self.cannon.draw(self.screen)
-            # cannon도 그림.
 
+        # 내려올 벽 표현 (회색 영역으로)
+        wall_y=self.grid.wall_offset
+        pygame.draw.rect(
+            self.screen,
+            (80,80,80),
+            (0,wall_y-SCREEN_HEIGHT,SCREEN_WIDTH,SCREEN_HEIGHT)
+        )
+
+        # 게임 오브젝트들
+        self.grid.draw(self.screen)
+            # 격자 버블
+        self.cannon.draw(self.screen)
+            # cannon
+
+        # 현재 버블 그림.
         if self.current_bubble:
             self.current_bubble.draw(self.screen)
-                # 현재 버블이면 현재 버블 그리기.
+
+        # 다음 버블 미리보는 기능 구현
+            # 왼쪽 하단에 두고 똑같이 보기 편하게 반투명으록 구현
+        if self.next_bubble:
+            # 기준점 먼저 설정
+                # 다음 버블 그려질 중심 좌표
+            next_x=80
+            next_y=SCREEN_HEIGHT-100
+
+            bg_surface=pygame.Surface((120,120))
+            bg_surface.set_alpha(180)
+                # surface의 투명도 설정
+            bg_surface.fill((0,0,0))
+            self.screen.blit(bg_surface,(next_x-60,next_y-60))
+
+            # NEXT 텍스트
+            font=pygame.font.Font(None,32)
+            next_txt=font.render("NEXT",True,(255,255,255))
+            next_txt_rect=next_txt.get_rect(center=(next_x,next_y-40))
+                # rect 객체 반환
+            self.screen.blit(next_txt,next_txt_rect)
+
+            # 다음 버블 그리기
+            pygame.draw.circle(
+                self.screen,
+                COLORS[self.next_bubble.color],
+                (next_x,next_y),
+                self.next_bubble.radius
+            )
+
+            # 테두리
+            pygame.draw.circle(
+                self.screen,
+                (255,255,255),
+                (next_x,next_y),
+                self.next_bubble.radius,
+                2
+            )
 
         self.score_ui.draw(self.screen)
             # 점수 표시.
+
+        # 상단 중앙에 정보 ui 구현
+        font=pygame.font.Font(None,40)
+        info=f'Stage {self.current_stage+1}/{len(STAGES)} | Shots {self.fire_count}/{LAUNCH_COOLDOWN} | Angle {int(self.cannon.angle)}'
+        info_txt=font.render(info,True,(220,220,220))
+            # 밝은 회색으로 표시
+        info_rect=info_txt.get_rect(center=(SCREEN_WIDTH//2,40))
+            # 중심 좌표 지정
+
+        # 반투명 배경 추가
+        padding=15
+            # 텍스트 주변에 15px 여백 둚.
+
+        bg_rectangle=pygame.Rect(
+            info_rect.x-padding,
+            info_rect.y-padding,
+            info_rect.width+padding*2,
+            info_rect.height+padding*2
+        )
+
+        bg_surface=pygame.Surface((bg_rectangle.width, bg_rectangle.height))
+        bg_surface.set_alpha(180)
+        bg_surface.fill((0,0,0))
+        self.screen.blit(bg_surface,(bg_rectangle.x,bg_rectangle.y))
+        self.screen.blit(info_txt,info_rect)
+
+
+
+
         pygame.display.flip()
-            # 디스플레이 갱신함.
+            # 화면 갱신함.
 
     # 메인 게임 루프 실행함.
     def run(self)->None:
+        """게임 메인 루프
+        """
+        # TODO: 승리, 패배 메시지 표시하기.
         while self.running:
             self.clock.tick(FPS)
                 # 프레임 속도 제한함.
             self.update()
-            # for event in pygame.event.get():
-            #     if event.type==pygame.QUIT:
-            #         self.running=False
+                # 게임 로직 업데이트.
             self.draw()
+                # 화면 그림.
 
         # 종료 화면
-        # TODO: 승리, 패배 메시지 표시하기.
-        pass
+        self.screen.fill((0,0,0))
+        font=pygame.font.Font(None,100)
+
+        # 승리, 패배 메시지
+        if self.current_stage>=len(STAGES):
+            msg="Success."
+        else:
+            msg="Fail."
+
+        # 텍스트 렌더링하고 중앙 배치하기
+        txt=font.render(msg,True,(255,255,255))
+        rect=txt.get_rect(center=(SCREEN_WIDTH//2,SCREEN_HEIGHT//2))
+        self.screen.blit(txt,rect)
+
+        pygame.display.flip()
+        pygame.time.delay(2000)
+            # 2초 대기함.
 
 def main()->None:
     # 프로그램 시작점
