@@ -575,7 +575,7 @@ class Game:
 
         # 게임 오버 라인 정의
             # 발사대보다 1-2칸 위로 지정
-        self.game_over_line=self.cannon.y-CELL_SIZE*1.5
+        self.game_over_line=self.cannon.y-CELL_SIZE*0.5
 
         self.score_ui:ScoreDisplay=ScoreDisplay()
             # 점수 UI 객체
@@ -600,7 +600,8 @@ class Game:
         # 스테이지 로드 (임시)
         # self.load_stage(self.current_stage)
         # 첫 번째 스테이지 로드
-        self.grid.load_from_stage(STAGES[self.current_stage])
+        # self.grid.load_from_stage(STAGES[self.current_stage])
+        self.load_stage(self.current_stage)
 
     # 스테이지 로드함.
     def load_stage(self,stage_index:int)->None:
@@ -613,10 +614,13 @@ class Game:
         # TODO: grid.load_from_stage() 호출하기.
         # TODO: 초기 버블 준비하기.
         stage_map=STAGES[stage_index]
+        # 오프셋 초기화
+        self.grid.wall_offset=0
+
         self.grid.load_from_stage(stage_map)
             # 맵 로드
 
-        # 초기화
+        # 전체 초기화
         self.current_bubble=None
         self.next_bubble=None
         self.fire_in_air=False
