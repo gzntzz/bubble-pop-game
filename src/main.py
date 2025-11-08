@@ -27,7 +27,7 @@ FPS:int=60
 UI_ALPHA=180
 
 # 종료 화면 딜레이 값 (ms)
-END_SCREEN_DELAY=500
+END_SCREEN_DELAY=300
 
 # 게임 오브젝트 크기 설정
 CELL_SIZE:int=64
@@ -64,51 +64,51 @@ MAP_COLS:int=24
 
 # 맵 데이터 1개만
 """ R, Y, G, ...: 각 색상의 앞글자를 가리킴. """
-STAGES:List[List[List[str]]]=[
+STAGES: List[List[List[str]]] = [
     # 스테이지 1: 초급 난이도
     [
-        list("RRYYGGBBRRYYGG.."),
-        list("RRYYGGBBRRYYG/.."),
-        list("BBGGRRYYBBGGRR.."),
-        list("BGGRRYYBBGGRR/.."),
-        list("................"),
-        list(".............../"),
-        list("................"),
-        list(".............../"),
-        list("................"),
-        list(".............../"),
-        list("................"),
-        list("................"),
+        list("RRYYGGBBRRYYGG.........."),  # 24칸
+        list("RRYYGGBBRRYYG/.........."),
+        list("BBGGRRYYBBGGRR.........."),
+        list("BGGRRYYBBGGRR/.........."),
+        list("........................"),
+        list("...................../..."),
+        list("........................"),
+        list("...................../..."),
+        list("........................"),
+        list("...................../..."),
+        list("........................"),
+        list("........................"),
     ],
     # 스테이지 2: 중급 난이도
     [
-        list("..R..Y..B..G..RR"),
-        list("..G..B..R..Y./YY"),
-        list("R.R.R.R.R.R.R.R."),
-        list("Y.Y.Y.Y.Y.Y.Y./."),
-        list("................"),
-        list(".............../"),
-        list("....RRGGYYBB...."),
-        list("....RRGGYYBB../."),
-        list("................"),
-        list(".............../"),
-        list("................"),
-        list("................"),
+        list("..R..Y..B..G..RR........"),
+        list("..G..B..R..Y./YY........"),
+        list("R.R.R.R.R.R.R.R........."),
+        list("Y.Y.Y.Y.Y.Y.Y./........."),
+        list("........................"),
+        list("...................../..."),
+        list("....RRGGYYBB............"),
+        list("....RRGGYYBB../........."),
+        list("........................"),
+        list("...................../..."),
+        list("........................"),
+        list("........................"),
     ],
     # 스테이지 3: 고급 난이도
     [
-        list("RGBYRGBYRGBYRGBY"),
-        list("RGBYRGBYRGBYRG/"),
-        list("................"),
-        list(".............../"),
-        list("GGGG........RRRR"),
-        list("GGGG......./RRRR"),
-        list("................"),
-        list(".............../"),
-        list("BBBB........YYYY"),
-        list("BBBB......./YYYY"),
-        list("................"),
-        list("................"),
+        list("RGBYRGBYRGBYRGBY........"),
+        list("RGBYRGBYRGBYRG/........."),
+        list("........................"),
+        list("...................../..."),
+        list("GGGG........RRRR........"),
+        list("GGGG......./RRRR........"),
+        list("........................"),
+        list("...................../..."),
+        list("BBBB........YYYY........"),
+        list("BBBB......./YYYY........"),
+        list("........................"),
+        list("........................"),
     ],
 ]
 
@@ -257,9 +257,11 @@ class HexGrid:
 
         for r in range(self.rows):
             for c in range(self.cols):
-                ch=self.map[r][c] if c<len(self.map[r]) else '.'
-                    # 열 인덱스가 현재 행의 길이보다 작은지 확인함.
-                        # True이면 해당 위치 문자 반환
+                if c<len(self.map[r]):
+                    ch=self.map[r][c]
+                else:
+                    ch='.'
+
                 # 딕셔너리 안에 키가 존재하는지 확인.
                 if ch in COLORS:
                     x,y=self.get_cell_center(r,c)
@@ -339,7 +341,7 @@ class HexGrid:
             # 각 neighbor 순회하면서 빈칸 찾으면 바로 반환
             for nr,nc in neighbors:
                 if self.is_in_bounds(nr,nc) and self.map[nr][nc]=='.':
-                    return nr,
+                    return nr,nc
 
         # 빈 칸 못 찾으면 경고 로그
         print(f"Warning: no empty cell found near. ({r},{c})")
@@ -378,7 +380,7 @@ class HexGrid:
 
     # 같은 색깔 버블을 DFS 탐색함.
     def dfs_same_color(self,row:int,col:int,color:str,visited:Set[Tuple[int,int]])->None:
-        """같은 색깔 버블을 DFS로 탐색함.
+        """같은 색깔 버블을 스택 기반으로 한 DFS로 탐색함.
 
         Args:
             row (int): _description_
@@ -517,6 +519,9 @@ class HexGrid:
             cx,cy=self.get_cell_center(b.row_idx,b.col_idx)
             b.x,b.y=cx,cy
 
+        # if self.lowest_bubble_bottom()>self.cannon.y-CELL_SIZE*0.5:
+        #     self.running=False
+
 # ======== ScoreDisplay 클래스 - 점수 표시 ========
 class ScoreDisplay:
     """ 게임의 현재 점수를 표시하는 UI. """
@@ -643,7 +648,7 @@ class Game:
             # 빈 집합 생성
 
         for r in range(self.grid.rows):
-            for c in range(self.grid.cols):
+            for c in range(min(self.grid.cols,len(self.grid.map[r]))):
                 ch=self.grid.map[r][c]
                     # 색상 추출
                 if ch in COLORS:
@@ -720,6 +725,8 @@ class Game:
         # TODO: DFS로 같은 색깔 버블 찾기.
         # TODO: 3개 이상이면 제거하고 점수 추가하기.
         # TODO: 자유낙하 버블 제거하기.
+        if self.current_bubble is None:
+            return 0
         color=self.grid.map[row][col]
 
         # 색상 아니면 무시
@@ -780,7 +787,6 @@ class Game:
 
             # 충돌 처리 로직
             if self.process_collision_and_attach():
-                assert self.current_bubble is not None
                 # 붙여진 위치에서 매칭 검사함.
                 rr,cc=self.current_bubble.row_idx,self.current_bubble.col_idx
                 self.pop_if_match(rr,cc)
@@ -810,7 +816,7 @@ class Game:
                 self.load_stage(self.current_stage)
 
         # 게임 오버 조건 체크함.
-        if self.lowest_bubble_bottom()>self.cannon.y-CELL_SIZE*0.5:
+        if self.lowest_bubble_bottom()>self.game_over_line:
             self.running=False
 
     # 스테이지 클리어 여부 확인함.
