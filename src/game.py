@@ -77,6 +77,8 @@ def load_stage_from_csv(stage_index:int)->List[List[str]]:
                     cell=cell.strip()
                     if cell=='' or cell.upper()=='X':
                         map_row.append('.')
+                    elif cell.upper()=='N':
+                        map_row.append('N')
                     elif cell.upper() in COLORS:
                         map_row.append(cell.upper())
                     else:
@@ -195,6 +197,7 @@ class HexGrid:
     def load_from_stage(self,stage_map:List[List[str]])->None:
         self.map=[row[:] for row in stage_map]
         self.bubble_list=[]
+        self.obs_list=[]
         for r in range(self.rows):
             if r>=len(self.map):
                 break
@@ -216,7 +219,8 @@ class HexGrid:
                 # 장애물 파싱
                 if ch=='N':
                     obsx,obsy=self.get_cell_center(r,c)
-                    ob=Obstacle(obsx,obsy,BUBBLE_RADIUS)
+                    # ob=Obstacle(obsx,obsy,BUBBLE_RADIUS)
+                    ob=Obstacle(obsx,obsy,BUBBLE_RADIUS,r,c)
                     self.obs_list.append(ob)
                     self.map[r][c]='N'
                     continue
@@ -372,6 +376,10 @@ class HexGrid:
             cx,cy=self.get_cell_center(b.row_idx,b.col_idx)
             b.x,b.y=cx,cy
 
+        for ob in self.obs_list:
+            cx,cy=self.get_cell_center(ob.row_idx,ob.col_idx)
+            ob.x,ob.y=cx,cy
+
     def raise_wall(self)->None:
         """벽을 한 칸 올려서(위로 이동) 여유 공간 늘림.
         """
@@ -382,6 +390,10 @@ class HexGrid:
         for b in self.bubble_list:
             cx,cy=self.get_cell_center(b.row_idx,b.col_idx)
             b.x,b.y=cx,cy
+
+        for ob in self.obs_list:
+            cx,cy=self.get_cell_center(ob.row_idx,ob.col_idx)
+            ob.x,ob.y=cx,cy
 
 # ======== ScoreDisplay ========
 class ScoreDisplay:
@@ -491,6 +503,11 @@ class Game:
         self.item_rainbow_count:int=3
             # 무지개 버블 아이템 개수
         # ------------------------------------------
+
+        # --- 요청 플래그만 추가 (임시: 테스트용) ---
+        self.use_swap=False
+        self.use_raise=False
+        self.use_rainbow=False
 
         self.load_stage(self.current_stage)
 
@@ -634,11 +651,15 @@ class Game:
                         self.current_bubble.set_angle(self.cannon.angle)
                 # --- 특수 아이템 테스트용 단축키 ---
                 elif event.key==pygame.K_1:
-                    self.use_item_swap()
+                    # self.use_item_swap()
+                    # FIXME: 직접 실행 대신 flag만 일단 세움.
+                    self.use_swap=True
                 elif event.key==pygame.K_2:
-                    self.use_item_raise()
+                    # self.use_item_raise()
+                    self.use_raise=True
                 elif event.key==pygame.K_3:
-                    self.use_item_rainbow()
+                    # self.use_item_rainbow()
+                    self.use_rainbow=True
 
         keys=pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
@@ -653,7 +674,19 @@ class Game:
                 self.fire_in_air=False
                 self.prepare_bubbles()
                 return
+            # --- 특수 아이템 플래그 처리(임시) ---
+            if self.use_swap:
+                self.use_item_swap()
+                self.use_swap=False
 
+            if self.use_raise:
+                self.use_item_raise()
+                self.use_raise=False
+
+            if self.use_rainbow:
+                self.use_item_rainbow()
+                self.use_rainbow=False
+            # --------------------------
             if self.process_collision_and_attach():
                 self.fire_count+=1
                 if self.fire_count>=LAUNCH_COOLDOWN:
