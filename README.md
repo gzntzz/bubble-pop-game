@@ -1,6 +1,6 @@
 ---
 
-# Bubble Pop Game 
+# Bubble Pop Game
 
 Python pygame 기반의 버블 슈터 게임
 
@@ -9,7 +9,7 @@ Python pygame 기반의 버블 슈터 게임
 
 ---
 
-## 빠른 시작 방법 
+## 빠른 시작 방법
 
 ```bash
 git clone https://github.com/gzntzz/bubble-pop-game.git
@@ -22,19 +22,23 @@ python src/main.py
 - `↑ ↓` - 게임 or 맵 에디터 or 나가기 선택
 - `Space` - 선택
 
-**게임 조작법**:  
-- `← →` - 각도 조절  
-- `Space` - 버블 발사  
+**게임 조작법**:
+- `← →` - 각도 조절
+- `Space` - 버블 발사
 - `1 2 3` - 아이템 사용
 
-**맵 에디터 조작법**:  
-- 마우스 클릭 - 버블 선택 및배치  
+**맵 에디터 조작법**:
+- 마우스 클릭 - 버블 선택 및배치
 - `ESC` - 메뉴로 복귀
 
 ---
 
 ## 주요 기능
-<img width="1920" height="1108" alt="CleanShot 2025-12-04 at 23 14 22" src="https://github.com/user-attachments/assets/bd1bbb66-f085-476e-b372-d96c801a8744" />
+<div style="display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap;">
+  <img src="game_screenshot_01.png" alt="메뉴화면" style="width: 32%; margin: 5px;">
+  <img src="game_screenshot_02.png" alt="게임화면" style="width: 32%; margin: 5px;">
+  <img src="game_screenshot_03.png" alt="맵 에디터" style="width: 32%; margin: 5px;">
+</div>
 
 ### 🎮 핵심 게임플레이
 - **육각형 격자 시스템**: 홀/짝 행 오프셋을 활용한 6방향 이웃 탐색
@@ -61,29 +65,30 @@ python src/main.py
 
 ---
 
-## 팀 구성 및 역할 
+## 팀 구성 및 역할
 
-**기획**  
+**기획**
 - **민기**: PM, 프로젝트 진행 주도, MVP 설정, 에셋 제작
+- **건택**: 시스템 구조 기획(씬 흐름, 확장 기능)
 - **준호**: 발표 자료(PPT, 대본) 제작, UI 피드백
 
-**개발**  
-- **건택**: 프로젝트 관리 및 리포지토리 구축, 메인 개발
-- **민기**: 게임 로직 개발, 맵 에디터 및 UI 구현, 서브 개발
+**개발**
+- **건택**: 게임 핵심 루프ㆍMVP 구현, 레포ㆍ브랜치 관리, 메인 개발
+- **민기**: 게임 로직 개발ㆍ보완, 맵 에디터 및 UI 구현, 서브 개발
 
-**디자인**  
+**디자인**
 - **예린**: UI/UX 디자인, 색상 팔레트, 레이아웃 설계
 - **민기**: UI 레이아웃, 대지 세팅
 
-자세한 내역은 [CONTRIBUTORS.md](CONTRIBUTORS.md)를 참고하세요.
+자세한 내역은 [CONTRIBUTING.md](CONTRIBUTING.md)를 참고하세요.
 
 ---
 
-## 프로젝트 구조 
+## 프로젝트 구조
 
 ```
-bubble-pop-game/  
-├── src/  
+bubble-pop-game/
+├── src/
 │   ├── main.py              # 게임 엔트리 포인트
 │   ├── game.py              # 게임 메인 로직 (충돌, DFS, 아이템)
 │   ├── map_editor.py        # 맵 에디터
@@ -98,7 +103,7 @@ bubble-pop-game/
 │   ├── color_settings.py    # 색상 설정
 │   ├── constants.py         # 상수 정의
 │   └── game_settings.py     # 게임 설정값
-├── assets/  
+├── assets/
 │   ├── images/              # 버블, 캐릭터, 배경, 아이템 이미지
 │   ├── sounds/              # BGM 및 효과음
 │   └── map_data/            # 스테이지 맵 파일 (CSV)

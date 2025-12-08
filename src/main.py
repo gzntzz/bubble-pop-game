@@ -7,7 +7,7 @@ from scene_factory import scene_factory
 
 
 def main() -> None:
-    """프로그램 엔트리포인트: 메뉴 → 게임 씬으로 진입."""
+    """엔트리포인트: 메뉴 → 게임 씬으로 진입."""
     pygame.init()
     pygame.mixer.init()
 

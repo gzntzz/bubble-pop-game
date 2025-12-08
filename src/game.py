@@ -541,21 +541,21 @@ class Game:
         # 아이템 이미지 로드 (SCALE 적용)
         self.item_images = {}
         item_size = (int(80*SCALE), int(80*SCALE))  # 버튼 크기에 맞춤
-        
+
         try:
             swap_img = pygame.image.load(ASSET_PATHS['item_swap']).convert_alpha()
             self.item_images['swap'] = pygame.transform.smoothscale(swap_img, item_size)
         except (pygame.error, FileNotFoundError) as e:
             print(f"SWAP 아이템 이미지 로드 실패: {e}")
             self.item_images['swap'] = None
-        
+
         try:
             raise_img = pygame.image.load(ASSET_PATHS['item_raise']).convert_alpha()
             self.item_images['raise'] = pygame.transform.smoothscale(raise_img, item_size)
         except (pygame.error, FileNotFoundError) as e:
             print(f"RAISE 아이템 이미지 로드 실패: {e}")
             self.item_images['raise'] = None
-        
+
         try:
             rainbow_img = pygame.image.load(ASSET_PATHS['item_rainbow']).convert_alpha()
             self.item_images['rainbow'] = pygame.transform.smoothscale(rainbow_img, item_size)
@@ -676,16 +676,16 @@ class Game:
 
             # 아이템 이미지가 있으면 이미지 사용, 없으면 기존 방식
             item_img = self.item_images.get(item_type)
-            
+
             if item_img:
                 # 이미지 표시
                 screen.blit(item_img, rect)
-                
+
                 # 눌림 효과: 테두리 강조
                 border_color = (255, 255, 100) if pressed else (220, 220, 220)
                 border_w = 4 if pressed else 2
                 pygame.draw.rect(screen, border_color, rect, border_w)
-                
+
                 # 남은 개수 표시 (이미지 위에)
                 if item_type=='swap':
                     cnt=self.item_swap_count
@@ -693,11 +693,11 @@ class Game:
                     cnt=self.item_raise_count
                 else: # rainbow
                     cnt=self.item_rainbow_count
-                
+
                 # 개수를 오른쪽 하단에 표시
                 cnt_surf=self.ui_font.render(str(cnt),True,(255,255,0))
                 cnt_rect=cnt_surf.get_rect(bottomright=(rect.right-5, rect.bottom-5))
-                
+
                 # 개수 배경 (가독성 향상)
                 bg_rect = cnt_rect.inflate(4, 4)
                 pygame.draw.rect(screen, (0, 0, 0), bg_rect)
@@ -958,15 +958,15 @@ class Game:
 
         # 변환 전 색상 저장
         original_color = self.current_bubble.color
-        
+
         # 최적 색상으로 변환
         best_color = self.best_color_for_rainbow()
         self.current_bubble.color = best_color
 
         self.item_rainbow_count -= 1
-        
+
         # 변환 전후 색상 출력
-        print(f"🌈 RAINBOW: {original_color} → {best_color}")
+        print(f"RAINBOW: {original_color} → {best_color}")
         print(f"RAINBOW used. Remaining: {self.item_rainbow_count}")
 
     def draw(self)->None:
