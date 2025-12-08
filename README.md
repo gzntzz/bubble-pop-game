@@ -34,7 +34,11 @@ python src/main.py
 ---
 
 ## 주요 기능
-<img width="1920" height="1108" alt="CleanShot 2025-12-04 at 23 14 22" src="https://github.com/user-attachments/assets/bd1bbb66-f085-476e-b372-d96c801a8744" />
+<div style="display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap;">
+  <img src="game_screenshot_01.png" alt="메뉴화면" style="width: 32%; margin: 5px;">
+  <img src="game_screenshot_02.png" alt="게임화면" style="width: 32%; margin: 5px;">
+  <img src="game_screenshot_03.png" alt="맵 에디터" style="width: 32%; margin: 5px;">
+</div>
 
 ### 🎮 핵심 게임플레이
 - **육각형 격자 시스템**: 홀/짝 행 오프셋을 활용한 6방향 이웃 탐색
@@ -75,7 +79,7 @@ python src/main.py
 - **예린**: UI/UX 디자인, 색상 팔레트, 레이아웃 설계
 - **민기**: UI 레이아웃, 대지 세팅
 
-자세한 내역은 [CONTRIBUTORS.md](CONTRIBUTORS.md)를 참고하세요.
+자세한 내역은 [CONTRIBUTING.md](CONTRIBUTING.md)를 참고하세요.
 
 ---
 

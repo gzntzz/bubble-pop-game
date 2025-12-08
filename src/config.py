@@ -33,11 +33,10 @@ WALL_DROP_PIXELS: int = CELL_SIZE
 MAP_ROWS: int = 6
 MAP_COLS: int = 8
 
-# FIXME: 하드코딩된 값보다 유연하게 배치해놓음.
 # 다음 버블 미리보기 표시 좌표 (사용자가 임의로 설정 가능)
 NEXT_BUBBLE_X = 700
     # 다음 버블 표시 x좌표
 NEXT_BUBBLE_Y_OFFSET = -80
     # 오프셋 조정 [수정]
     # 다음 버블 표시될 위치를 조정하는 수치
-        # 음수면 아래에서 위로
+    # 음수면 아래에서 위로

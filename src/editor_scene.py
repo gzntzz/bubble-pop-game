@@ -9,7 +9,7 @@ class EditorScene:
     
     def run(self):
         """Map Editor 실행"""
-        # MapEditor 인스턴스 생성 (이미 pygame.init()은 main.py에서 완료됨)
+        # MapEditor 인스턴스 생성
         self.editor = MapEditor()
         
         # 에디터 실행 (ESC 키로 종료 가능)
