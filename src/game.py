@@ -38,6 +38,14 @@ except pygame.error as e:
     print(f"이미지 로드 실패함: {e}. 기본 색상으로 대체합니다.")
     BUBBLE_IMAGES=None
 
+# ======== 장애물 이미지 로드 ========
+try:
+    OBSTACLE_IMAGE = pygame.image.load(ASSET_PATHS['bubble_obstacle'])
+    print("장애물 이미지 로드 완료.")
+except pygame.error as e:
+    print(f"장애물 이미지 로드 실패함: {e}. 기본 도형으로 대체합니다.")
+    OBSTACLE_IMAGE = None
+
 # ======== 이미지 크기 조정 ========
 if BUBBLE_IMAGES:
     target_size=BUBBLE_RADIUS*2
@@ -47,6 +55,15 @@ if BUBBLE_IMAGES:
             (target_size,target_size)
         )
     print(f"버블 이미지 크기 조정 완료: {target_size}x{target_size}px")
+
+# ======== 장애물 이미지 크기 조정 ========
+if OBSTACLE_IMAGE:
+    target_size=BUBBLE_RADIUS*2
+    OBSTACLE_IMAGE=pygame.transform.smoothscale(
+        OBSTACLE_IMAGE,
+        (target_size,target_size)
+    )
+    print(f"장애물 이미지 크기 조정 완료: {target_size}x{target_size}px")
 
 # 안전차원에서 다시 명시
 COLORS:dict[str,Tuple[int,int,int]]={
@@ -220,7 +237,7 @@ class HexGrid:
                 if ch=='N':
                     obsx,obsy=self.get_cell_center(r,c)
                     # ob=Obstacle(obsx,obsy,BUBBLE_RADIUS)
-                    ob=Obstacle(obsx,obsy,BUBBLE_RADIUS,r,c)
+                    ob=Obstacle(obsx,obsy,BUBBLE_RADIUS,r,c,OBSTACLE_IMAGE)
                     self.obs_list.append(ob)
                     self.map[r][c]='N'
                     continue
